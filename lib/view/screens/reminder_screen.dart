@@ -3,13 +3,25 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:zenreminder/services/notification_service.dart';
 
+class Reminder {
+  final String title;
+  final String body;
+  final DateTime dateTime;
+
+  Reminder({
+    required this.title,
+    required this.body,
+    required this.dateTime,
+  });
+}
+
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  List<String> reminders = [];
+  List<Reminder> reminders = [];
 
   @override
   void initState() {
@@ -17,11 +29,9 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
   }
 
-//  to listen to any notification clicked or not
+  // Listen to any notification clicked or not
   listenToNotifications() {
-    print("Listening to notification");
     LocalNotifications.onClickNotification.stream.listen((event) {
-      print(event);
       Navigator.pushNamed(context, '/another', arguments: event);
     });
   }
@@ -70,11 +80,60 @@ class _MainScreenState extends State<MainScreen> {
                 child: ListView.builder(
                   itemCount: reminders.length,
                   itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(
-                        reminders[index],
-                        style: TextStyle(color: Colors.white),
+                    return ExpansionTile(
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              reminders[index].title,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: Icon(Icons.more_vert, color: Colors.white),
+                            itemBuilder: (context) => [
+                              PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Text('Edit'),
+                              ),
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Text('Delete'),
+                              ),
+                            ],
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showAddReminderDialog(context, reminders[index]);
+                              } else if (value == 'delete') {
+                                setState(() {
+                                  reminders.removeAt(index);
+                                });
+                              }
+                            },
+                          ),
+                        ],
                       ),
+                      subtitle: Text(
+                        formattedDateTime(reminders[index].dateTime, context),
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800], // Slightly lighter color
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                reminders[index].body,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -85,17 +144,22 @@ class _MainScreenState extends State<MainScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showAddReminderDialog(context);
+          _showAddReminderDialog(context, null);
         },
         child: Icon(Icons.add),
       ),
     );
   }
 
-  void _showAddReminderDialog(BuildContext context) async {
-    TextEditingController titleController = TextEditingController();
-    DateTime selectedDate = DateTime.now();
-    TimeOfDay selectedTime = TimeOfDay.now();
+  String formattedDateTime(DateTime dateTime, BuildContext context) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${TimeOfDay.fromDateTime(dateTime).format(context)}';
+  }
+
+  void _showAddReminderDialog(BuildContext context, [Reminder? reminderToEdit]) async {
+    TextEditingController titleController = TextEditingController(text: reminderToEdit?.title ?? '');
+    TextEditingController bodyController = TextEditingController(text: reminderToEdit?.body ?? '');
+    DateTime selectedDate = reminderToEdit?.dateTime ?? DateTime.now();
+    TimeOfDay selectedTime = TimeOfDay.fromDateTime(selectedDate);
 
     showDialog(
       context: context,
@@ -131,6 +195,21 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               SizedBox(height: 20),
+              TextField(
+                controller: bodyController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
               ListTile(
                 title: Text(
                   'Date: ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
@@ -146,10 +225,8 @@ class _MainScreenState extends State<MainScreen> {
                     builder: (BuildContext context, Widget? child) {
                       return Theme(
                         data: ThemeData.dark().copyWith(
-                          backgroundColor: Colors
-                              .grey[800], // background color of date picker
-                          scaffoldBackgroundColor: Colors.grey[
-                              800], // background color of the surrounding dialog
+                          backgroundColor: Colors.grey[800], // background color of date picker
+                          scaffoldBackgroundColor: Colors.grey[800], // background color of the surrounding dialog
                         ),
                         child: child!,
                       );
@@ -175,10 +252,8 @@ class _MainScreenState extends State<MainScreen> {
                     builder: (BuildContext context, Widget? child) {
                       return Theme(
                         data: ThemeData.dark().copyWith(
-                          backgroundColor: Colors
-                              .grey[800], // background color of time picker
-                          scaffoldBackgroundColor: Colors.grey[
-                              800], // background color of the surrounding dialog
+                          backgroundColor: Colors.grey[800], // background color of time picker
+                          scaffoldBackgroundColor: Colors.grey[800], // background color of the surrounding dialog
                         ),
                         child: child!,
                       );
@@ -202,12 +277,8 @@ class _MainScreenState extends State<MainScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                String reminder = titleController.text.isNotEmpty
-                    ? titleController.text
-                    : 'Reminder';
-                String dateTime =
-                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year} ${selectedTime.format(context)}';
-                reminders.add('$reminder - $dateTime');
+                String reminderTitle = titleController.text.isNotEmpty ? titleController.text : 'Reminder';
+                String reminderBody = bodyController.text.isNotEmpty ? bodyController.text : '';
                 DateTime scheduledDateTime = DateTime(
                   selectedDate.year,
                   selectedDate.month,
@@ -215,16 +286,13 @@ class _MainScreenState extends State<MainScreen> {
                   selectedTime.hour,
                   selectedTime.minute,
                 );
-                LocalNotifications.showScheduleNotification(
-                    title: reminder,
-                    body: "body",
-                    payload: "payload",
-                    scheduledDateTime: scheduledDateTime);
-                //  LocalNotifications.showScheduleNotification(
-                //     body: "fwf", payload: "fdg", title: "jjk");
-                //      LocalNotifications.showSimpleNotification(
-                //     body: "fwf", payload: "fdg", title: "jjk");
-
+                Reminder newReminder = Reminder(title: reminderTitle, body: reminderBody, dateTime: scheduledDateTime);
+                if (reminderToEdit == null) {
+                  reminders.add(newReminder);
+                } else {
+                  int index = reminders.indexOf(reminderToEdit);
+                  reminders[index] = newReminder;
+                }
                 setState(() {});
                 Navigator.of(context).pop();
               },
