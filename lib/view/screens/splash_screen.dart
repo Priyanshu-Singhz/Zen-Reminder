@@ -1,7 +1,6 @@
-// lib/view/splash_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:zenreminder/controllers/authentication_controller.dart';
+import 'package:zenreminder/constants.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -41,7 +40,14 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.grey[900]!, Colors.black],
+            colors: [
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkBackgroundColor
+                  : AppColors.lightBackgroundColor,
+              Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkPrimaryColor
+                  : AppColors.lightPrimaryColor,
+            ],
           ),
         ),
         child: Center(

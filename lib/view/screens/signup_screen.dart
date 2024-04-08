@@ -1,14 +1,15 @@
-// lib/view/signup_screen.dart
+// signup_screen.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:zenreminder/controllers/authentication_controller.dart';
+import 'package:zenreminder/services/firebase_services.dart';
 import 'package:zenreminder/view/screens/reminder_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
-  final AuthenticationController _authController = AuthenticationController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseService _firebaseService = FirebaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -109,20 +110,23 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  void _signUp(BuildContext context) {
+  void _signUp(BuildContext context) async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (name.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
-      // Perform signup
-      // Add your signup logic here
-
-      // If signup is successful, redirect to main screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
-      );
+      User? user = await _firebaseService.signUpWithEmailAndPassword(email, password);
+      if (user != null) {
+        // If signup is successful, redirect to main screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen(username: '',)),
+        );
+      } else {
+        // Show Snackbar if signup failed
+        _showSnackbar(context, 'Signup failed, please try again');
+      }
     } else {
       // Show Snackbar for missing fields
       _showSnackbar(context, 'Please fill in all details');

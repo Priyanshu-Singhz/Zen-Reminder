@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "708130984645",
+    "project_id": "zen-reminder-47164",
+    "storage_bucket": "zen-reminder-47164.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708130984645:android:59776e9ef75055111d96ac",
+        "android_client_info": {
+          "package_name": "com.example.zenreminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708130984645-e04onbfbe1n8necj8289i3he7s5cs5u2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.zenreminder",
+            "certificate_hash": "a4ecac70c614a9a12735135bb9069182db796158"
+          }
+        },
+        {
+          "client_id": "708130984645-k5pikal791d6rrc8el8uenjm5jiud05f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBh9wgu6G6PRgbGUKsMJQ-VO6PfaOd4mRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "708130984645-k5pikal791d6rrc8el8uenjm5jiud05f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "708130984645-llh1d8npi8l08ahfjn37pm767d0alivj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.zenreminder.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
